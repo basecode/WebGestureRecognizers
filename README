@@ -1,0 +1,26 @@
+a gesture recognizer written in javascript for mouse- and touch-devices.
+
+* beta
+* the only gesture that is supported at the moment is a horizontal swipe gesture.
+* works in modern browsers.
+
+<script type="text/javascript" src="recordMoves.js"></script>
+<script type="text/javascript" src="gestureRecognizer.js"></script>
+<script type="text/javascript" src="swipeGestureRecognizer.js"></script>
+
+var swipeGestureRecognizerCallback;
+var selector = ".myElement";
+
+swipeGestureRecognizer(selector, swipeGestureRecognizerCallback);
+
+function swipeGestureRecognizerCallback(obj) {
+
+	if (obj.isSwipeLeft()) {
+	}
+
+	if (obj.isSwipeRight()) {
+	}
+
+	if (obj.swipeCanceled()) {
+	}	
+}
