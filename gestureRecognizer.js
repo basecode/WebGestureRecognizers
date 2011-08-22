@@ -1,5 +1,5 @@
 // gestureRecognizer
-(function(host/*host-object*/, recordMoves/*recordMoves-object*/, undefined) {
+(function(host/*host-object*/, onUserInteractionMove/*onUserInteractionMove-object*/, undefined) {
 
     "use strict";
     
@@ -11,25 +11,11 @@
         var self = this;
         this.callback = func;
 
-        recordMoves(sel, function(obj) {
-            self.recordMovesCallback(obj);
+        onUserInteractionMove(sel, function(obj) {
+            // callback function must be overwritten by a derived class
+            self.userInteractionMoveCallback(obj);
         });
     };
-    
-    /*var createUUID = R._createUUID = (function (uuidRegEx, uuidReplacer) {
-        return function () {
-            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(uuidRegEx, uuidReplacer).toUpperCase();
-        };
-    })(/[xy]/g, function (c) {
-        var r = math.random() * 16 | 0,
-            v = c == "x" ? r : (r & 3 | 8);
-        return v.toString(16);
-    });
-    
-    r.prototype.toString = function() {
-        
-    }
-    */
     
     r.prototype.threshold = {
         tolerance : { x : 10, y : 10 },
@@ -45,4 +31,4 @@
         return new r(selector, callback);
     }
 
-})(this, this.recordMoves);
+})(this, this.onUserInteractionMove);

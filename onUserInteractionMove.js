@@ -1,4 +1,36 @@
-// onUserInteraction
+// onUserInteractionMove
+// author : Tobias Reiss
+// twitter: @basecode
+//
+// (void) onUserInteractionMove(selector || element || nodelist, callback-function);
+//
+// recognize mouse or touch movements and sends some useful information
+// to the callback function. 
+//
+// btw: interactions that are not covered are resize and rotate
+
+/* usage:
+
+onUserInteractionMove("canvas", function callback(callbackObject) {
+    
+    console.log(callbackObject.element);  //<dom-element>
+    console.log(callbackObject.event);    //<event-object>
+    
+    console.log(callbackObject.position.page); //<absolute x,y>
+    console.log(callbackObject.position.element); //<relative x,y>
+    console.log(callbackObject.position.delta); //<delta x,y>
+    
+    if (callbackObject.isFirstAction()) {
+        //...
+    }
+    
+    if (callbackObject.isLastAction()) {
+        //...
+    }
+});
+
+*/
+
 
 (function(host/*host-object*/, doc/*document-object*/) {
 
@@ -11,18 +43,13 @@
     var VALID_SESSION   = 2;
     var FIRST_ACTION    = 4;
     var LAST_ACTION     = 8;
+    
+    var supportsTouch = 'createTouch' in doc;
 
     var m = function(sel, func) {
         this.callback = func;
         this.info = INVALID_SESSION;
         this.attachEventListeners(sel);
-    };
-    
-    m.prototype.cons = {
-        INVALID_SESSION : INVALID_SESSION,
-        VALID_SESSION : VALID_SESSION,
-        FIRST_ACTION : FIRST_ACTION,
-        LAST_ACTION : LAST_ACTION
     };
     
     m.prototype.getType = function(value) {
@@ -145,7 +172,7 @@
     m.prototype.attachEventListeners = function(sel) {
         var selType = this.getType(sel);
         var eve = "addEventListener";
-        var els = selType == "string" ? doc.querySelectorAll(sel)/*selector*/ : /element$/.test(selType) ? [sel]/*html-element*/ : sel/*nodelist*/;
+        var els = selType == "string" ? doc["querySelectorAll"](sel)/*selector*/ : /element$/.test(selType) ? [sel]/*html-element*/ : sel/*nodelist*/;
         var m   = this;
         var action = function(e) {
             e.preventDefault();
@@ -156,17 +183,17 @@
             return;
         
         for (var i = 0, len = els.length; i < len; i++) {
-            els[i][eve]("ontouchstart" in host ? "touchstart" : "mousedown", action, false);
+            els[i][eve](supportsTouch ? "touchstart" : "mousedown", action, false);
         }
 
-        host[eve]("ontouchmove" in host ? "touchmove" : "mousemove", action, false);
-        host[eve]("ontouchend" in host ? "touchend" : "mouseup", action, false);
-        host[eve]("ontouchcancel" in host ? "touchcancel" : "mouseup", action, false);
+        host[eve](supportsTouch ? "touchmove" : "mousemove", action, false);
+        host[eve](supportsTouch ? "touchend" : "mouseup", action, false);
+        host[eve](supportsTouch ? "touchcancel" : "mouseup", action, false);
         
         return this;
     }
 
-    host.onUserInteraction = function(selector, callback) {
+    host.onUserInteractionMove = function(selector, callback) {
         return new m(selector, callback);
     }
 

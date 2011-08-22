@@ -26,21 +26,36 @@
         var right = this.cache.total.x > 0 && deltaX > -this.threshold.tolerance.x;
         return left || right;
     }
-    
-    // recordMovesCallback
-    r.prototype.recordMovesCallback = function(recordMovesCallbackObject) {
-        
-        this.cache.element = recordMovesCallbackObject.element;
 
-        if (this.checkThresholdToleranceForX(recordMovesCallbackObject.delta.x)) {
-            this.cache.total.x += recordMovesCallbackObject.delta.x;
+    r.prototype.checkThresholdToleranceForY = function(deltaY) {
+        var top = this.cache.total.y > 0 && deltaY > -this.threshold.tolerance.y;
+        var bottom  = this.cache.total.y < 0 && deltaY < this.threshold.tolerance.y;
+        return top || bottom;
+    }
+    
+    // userInteractionMoveCallback
+    r.prototype.userInteractionMoveCallback = function(obj) {
+
+        this.cache.element = obj.element;
+
+        if (this.checkThresholdToleranceForX(obj.position.delta.x)) {
+            this.cache.total.x += obj.position.delta.x;
         } else {
-            this.cache.total.x = recordMovesCallbackObject.delta.x;
+            this.cache.total.x = obj.position.delta.x;
+        }
+        
+        if (this.checkThresholdToleranceForY(obj.position.delta.y)) {
+            this.cache.total.y += obj.position.delta.y;
+        } else {
+            this.cache.total.y = obj.position.delta.y;
         }
 
-        //console.log(this.cache.total.x, recordMovesCallbackObject.isLastRecord());
-        var _isSwipeLeft = recordMovesCallbackObject.isLastRecord() && this.cache.total.x < -this.threshold.value.x;
-        var _isSwipeRight = recordMovesCallbackObject.isLastRecord() && this.cache.total.x > this.threshold.value.x;
+        //console.log(this.cache.total.x, recordMovesCallbackObject.isLastAction());
+        var _isSwipeLeft = obj.isLastAction() && this.cache.total.x < -this.threshold.value.x;
+        var _isSwipeRight = obj.isLastAction() && this.cache.total.x > this.threshold.value.x;
+
+        var _isSwipeTop = obj.isLastAction() && this.cache.total.y > this.threshold.value.y;
+        var _isSwipeBottom = obj.isLastAction() && this.cache.total.y < -this.threshold.value.y;
 
         var callbackObject = {
             isSwipeLeft : function() {
@@ -49,17 +64,27 @@
             isSwipeRight : function() {
                 return _isSwipeRight;
             },
-            swipeCanceled : function() {
-                return recordMovesCallbackObject.isLastRecord() && !_isSwipeLeft && !_isSwipeRight;
+            isSwipeTop : function() {
+                return _isSwipeTop;
             },
-            delta : recordMovesCallbackObject.delta,
+            isSwipeBottom : function() {
+                return _isSwipeBottom;
+            },
+            swipeHorizontalCanceled : function() {
+                return obj.isLastAction() && !_isSwipeLeft && !_isSwipeRight;
+            },
+            swipeVerticalCanceled : function() {
+                return obj.isLastAction() && !_isSwipeTop && !_isSwipeBottom;
+            },
+            delta : obj.position.delta,
             element: this.cache.element
         };
         
         this.callback(callbackObject);
         
-        if (recordMovesCallbackObject.isLastRecord()) {
+        if (obj.isLastAction()) {
             this.cache.total.x = 0;
+            this.cache.total.y = 0;
         }
     }
     
