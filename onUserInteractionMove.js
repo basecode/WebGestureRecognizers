@@ -45,31 +45,34 @@ onUserInteractionMove("canvas", function callback(callbackObject) {
     var LAST_ACTION     = 8;
     
     var supportsTouch = 'createTouch' in doc;
+		var toString = {}.toString;
 
     var m = function(sel, func) {
         this.callback = func;
         this.info = INVALID_SESSION;
         this.attachEventListeners(sel);
     };
+
+		var proto = m.prototype;
     
-    m.prototype.getType = function(value) {
-        return Object.prototype.toString.apply(value).slice(8, -1).toLowerCase();
+    proto.getType = function(value) {
+        return toString.apply(value).slice(8, -1).toLowerCase();
     }
     
-    m.prototype.cache = {
+    proto.cache = {
         x : 0,
         y : 0,
         el: null
     };
     
-    m.prototype.userPositionInPage = function(event) {
+    proto.userPositionInPage = function(event) {
         return {
             x : (event.touches) ? event.changedTouches[0].pageX : event.pageX,
             y : (event.touches) ? event.changedTouches[0].pageY : event.pageY
         };
     }
     
-    m.prototype.userPositionInElement = function(inPagePosition) {
+    proto.userPositionInElement = function(inPagePosition) {
         var obj = this.cache.element, left = 0, top = 0;
         
         do {
@@ -83,7 +86,7 @@ onUserInteractionMove("canvas", function callback(callbackObject) {
         };
     }
 
-    m.prototype.validateSession = function(e) {
+    proto.validateSession = function(e) {
         
         if (/touchstart|mousedown/.test(e.type)) { /* start session */
             this.firstAction(e);
@@ -105,11 +108,11 @@ onUserInteractionMove("canvas", function callback(callbackObject) {
         return this.info & VALID_SESSION;
     }
     
-    m.prototype.exit = function() {
+    proto.exit = function() {
         this.info = (this.info | INVALID_SESSION) & ~VALID_SESSION;
     }
     
-    m.prototype.moving = function(e) {
+    proto.moving = function(e) {
         
         if (!this.validateSession(e) && !(this.info & LAST_ACTION)) {
             return;
@@ -151,7 +154,7 @@ onUserInteractionMove("canvas", function callback(callbackObject) {
         this.info &= ~LAST_ACTION;
     }
     
-    m.prototype.firstAction = function(e) {
+    proto.firstAction = function(e) {
         var pagePosition = this.userPositionInPage(e);
         this.cache.x = pagePosition.x;
         this.cache.y = pagePosition.y;
@@ -165,11 +168,11 @@ onUserInteractionMove("canvas", function callback(callbackObject) {
         this.info = (this.info | VALID_SESSION | FIRST_ACTION) & ~INVALID_SESSION;
     }
     
-    m.prototype.lastAction = function() {
+    proto.lastAction = function() {
         this.info = (this.info | INVALID_SESSION | LAST_ACTION) & ~VALID_SESSION;
     }
     
-    m.prototype.attachEventListeners = function(sel) {
+    proto.attachEventListeners = function(sel) {
         var selType = this.getType(sel);
         var eve = "addEventListener";
         var els = selType == "string" ? doc["querySelectorAll"](sel)/*selector*/ : /element$/.test(selType) ? [sel]/*html-element*/ : sel/*nodelist*/;
