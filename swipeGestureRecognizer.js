@@ -2,7 +2,7 @@
 (function(host/*host-object*/, gestureRecognizer/*gestureRecognizer-object*/, undefined) {
 
     "use strict";
-    
+
     var DIRECTION_LEFT   = 1;
     var DIRECTION_RIGHT  = 2;
     var DIRECTION_TOP    = 4;
@@ -11,30 +11,30 @@
     var r = function(sel, func) {
         this.constructor.apply(this, arguments);
     };
-    
-    r.prototype = new gestureRecognizer();
-    
-    r.prototype.cons = {
+
+    var proto = r.prototype = new gestureRecognizer();
+
+    proto.cons = {
         DIRECTION_LEFT   : DIRECTION_LEFT,
         DIRECTION_RIGHT  : DIRECTION_RIGHT,
         DIRECTION_TOP    : DIRECTION_TOP,
         DIRECTION_BOTTOM : DIRECTION_BOTTOM
     };
-    
-    r.prototype.checkThresholdToleranceForX = function(deltaX) {
+
+    proto.checkThresholdToleranceForX = function(deltaX) {
         var left  = this.cache.total.x < 0 && deltaX <  this.threshold.tolerance.x;
         var right = this.cache.total.x > 0 && deltaX > -this.threshold.tolerance.x;
         return left || right;
     }
 
-    r.prototype.checkThresholdToleranceForY = function(deltaY) {
+    proto.checkThresholdToleranceForY = function(deltaY) {
         var top = this.cache.total.y > 0 && deltaY > -this.threshold.tolerance.y;
         var bottom  = this.cache.total.y < 0 && deltaY < this.threshold.tolerance.y;
         return top || bottom;
     }
-    
+
     // userInteractionMoveCallback
-    r.prototype.userInteractionMoveCallback = function(obj) {
+    proto.userInteractionMoveCallback = function(obj) {
 
         this.cache.element = obj.element;
 
@@ -43,7 +43,7 @@
         } else {
             this.cache.total.x = obj.position.delta.x;
         }
-        
+
         if (this.checkThresholdToleranceForY(obj.position.delta.y)) {
             this.cache.total.y += obj.position.delta.y;
         } else {
@@ -58,16 +58,16 @@
         var _isSwipeBottom = obj.isLastAction() && this.cache.total.y < -this.threshold.value.y;
 
         var callbackObject = {
-            isSwipeLeft : function() {
+            isSwipeLeft : function() {
                 return _isSwipeLeft;
             },
-            isSwipeRight : function() {
+            isSwipeRight : function() {
                 return _isSwipeRight;
             },
-            isSwipeTop : function() {
+            isSwipeTop : function() {
                 return _isSwipeTop;
             },
-            isSwipeBottom : function() {
+            isSwipeBottom : function() {
                 return _isSwipeBottom;
             },
             swipeHorizontalCanceled : function() {
@@ -79,15 +79,15 @@
             delta : obj.position.delta,
             element: this.cache.element
         };
-        
+
         this.callback(callbackObject);
-        
+
         if (obj.isLastAction()) {
             this.cache.total.x = 0;
             this.cache.total.y = 0;
         }
     }
-    
+
     host.swipeGestureRecognizer = function(selector, callback) {
         return new r(selector, callback);
     }
