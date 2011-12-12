@@ -21,41 +21,49 @@
         DIRECTION_BOTTOM : DIRECTION_BOTTOM
     };
 
-    proto.checkThresholdToleranceForX = function(deltaX) {
-        var left  = this.cache.total.x < 0 && deltaX <  this.threshold.tolerance.x;
-        var right = this.cache.total.x > 0 && deltaX > -this.threshold.tolerance.x;
-        return left || right;
+    proto.checkThresholdToleranceForX = function(cachedTotalX, deltaX) {
+        var thresholdToleranceX = this.threshold.tolerance.x;
+        return (cachedTotalX < 0 && deltaX <  thresholdToleranceX) ||
+               (cachedTotalX > 0 && deltaX > -thresholdToleranceX);
     }
 
-    proto.checkThresholdToleranceForY = function(deltaY) {
-        var top = this.cache.total.y > 0 && deltaY > -this.threshold.tolerance.y;
-        var bottom  = this.cache.total.y < 0 && deltaY < this.threshold.tolerance.y;
-        return top || bottom;
+    proto.checkThresholdToleranceForY = function(cachedTotalY, deltaY) {
+        var thresholdToleranceY = this.threshold.tolerance.y;
+        return (cachedTotalY > 0 && deltaY > -thresholdToleranceY) ||
+               (cachedTotalY < 0 && deltaY < thresholdToleranceY);
     }
 
     // userInteractionMoveCallback
     proto.userInteractionMoveCallback = function(obj) {
 
-        this.cache.element = obj.element;
+        var cachedElement = this.cache.element = obj.element;
+        var cachedTotal = this.cache.total;
+        var objPositionDelta = obj.position.delta;
+        var objPositionDeltaX = objPositionDelta.x;
+        var objPositionDeltaY = objPositionDelta.y;
+        var objIsLastAction = obj.isLastAction();
+        var thresholdValue = this.threshold.value;
+        var thresholdValueX = thresholdValue.x;
+        var thresholdValueY = thresholdValue.y;
 
-        if (this.checkThresholdToleranceForX(obj.position.delta.x)) {
-            this.cache.total.x += obj.position.delta.x;
+        if (this.checkThresholdToleranceForX(cachedTotal.x, objPositionDeltaX)) {
+            cachedTotal.x += objPositionDeltaX;
         } else {
-            this.cache.total.x = obj.position.delta.x;
+            cachedTotal.x = objPositionDeltaX;
         }
 
-        if (this.checkThresholdToleranceForY(obj.position.delta.y)) {
-            this.cache.total.y += obj.position.delta.y;
+        if (this.checkThresholdToleranceForY(cachedTotal.y, objPositionDeltaY)) {
+            cachedTotal.y += objPositionDeltaY;
         } else {
-            this.cache.total.y = obj.position.delta.y;
+            cachedTotal.y = objPositionDeltaY;
         }
 
         //console.log(this.cache.total.x, recordMovesCallbackObject.isLastAction());
-        var _isSwipeLeft = obj.isLastAction() && this.cache.total.x < -this.threshold.value.x;
-        var _isSwipeRight = obj.isLastAction() && this.cache.total.x > this.threshold.value.x;
+        var _isSwipeLeft = objIsLastAction && cachedTotal.x < -thresholdValueX;
+        var _isSwipeRight = objIsLastAction && cachedTotal.x > thresholdValueX;
 
-        var _isSwipeTop = obj.isLastAction() && this.cache.total.y > this.threshold.value.y;
-        var _isSwipeBottom = obj.isLastAction() && this.cache.total.y < -this.threshold.value.y;
+        var _isSwipeTop = objIsLastAction && cachedTotal.y > thresholdValueY;
+        var _isSwipeBottom = objIsLastAction && cachedTotal.y < -thresholdValueY;
 
         var callbackObject = {
             isSwipeLeft : function() {
@@ -71,24 +79,24 @@
                 return _isSwipeBottom;
             },
             swipeHorizontalCanceled : function() {
-                return obj.isLastAction() && !_isSwipeLeft && !_isSwipeRight;
+                return objIsLastAction && !_isSwipeLeft && !_isSwipeRight;
             },
             swipeVerticalCanceled : function() {
-                return obj.isLastAction() && !_isSwipeTop && !_isSwipeBottom;
+                return objIsLastAction && !_isSwipeTop && !_isSwipeBottom;
             },
-            delta : obj.position.delta,
-            element: this.cache.element
+            delta : objPositionDelta,
+            element: cachedElement
         };
 
         this.callback(callbackObject);
 
         if (obj.isLastAction()) {
-            this.cache.total.x = 0;
-            this.cache.total.y = 0;
+            cachedTotal.x = 0;
+            cachedTotal.y = 0;
         }
     }
 
-    host.swipeGestureRecognizer = function(selector, callback) {
+    host.onSwipeGesture = function(selector, callback) {
         return new r(selector, callback);
     }
 
